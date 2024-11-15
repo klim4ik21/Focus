@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0D3DDE2A2CE7A98E00623DA2 /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = 0D3DDE292CE7A98E00623DA2 /* GoogleGenerativeAI */; };
 		0D3DDE552CE7DCFD00623DA2 /* AppUpdater in Frameworks */ = {isa = PBXBuildFile; productRef = 0D3DDE542CE7DCFD00623DA2 /* AppUpdater */; };
+		0D3DDE5A2CE7E2B300623DA2 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 0D3DDE592CE7E2B300623DA2 /* ZIPFoundation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 			files = (
 				0D3DDE552CE7DCFD00623DA2 /* AppUpdater in Frameworks */,
 				0D3DDE2A2CE7A98E00623DA2 /* GoogleGenerativeAI in Frameworks */,
+				0D3DDE5A2CE7E2B300623DA2 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				0D3DDE292CE7A98E00623DA2 /* GoogleGenerativeAI */,
 				0D3DDE542CE7DCFD00623DA2 /* AppUpdater */,
+				0D3DDE592CE7E2B300623DA2 /* ZIPFoundation */,
 			);
 			productName = Focus;
 			productReference = 0D3DDDB52CE6958400623DA2 /* Focus.app */;
@@ -106,6 +109,7 @@
 			packageReferences = (
 				0D3DDE282CE7A98D00623DA2 /* XCRemoteSwiftPackageReference "generative-ai-swift" */,
 				0D3DDE532CE7DCFD00623DA2 /* XCRemoteSwiftPackageReference "AppUpdater" */,
+				0D3DDE582CE7E2B300623DA2 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0D3DDDB62CE6958400623DA2 /* Products */;
@@ -352,6 +356,14 @@
 				minimumVersion = 1.1.1;
 			};
 		};
+		0D3DDE582CE7E2B300623DA2 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -364,6 +376,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0D3DDE532CE7DCFD00623DA2 /* XCRemoteSwiftPackageReference "AppUpdater" */;
 			productName = AppUpdater;
+		};
+		0D3DDE592CE7E2B300623DA2 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0D3DDE582CE7E2B300623DA2 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

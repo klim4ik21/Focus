@@ -11,7 +11,7 @@ import UserNotifications
 @main
 struct FocusApp: App {
 	@StateObject private var timer = PomodoroTimer(workInMinutes: 1, breakInMinutes: 1)
-	@StateObject private var updateChecker = UpdateChecker() // Используем UpdateChecker
+	@StateObject private var updateChecker = UpdateChecker()
 	@State private var isWorkMode: Bool = false
 
 	var body: some Scene {
@@ -21,14 +21,12 @@ struct FocusApp: App {
 					.frame(minWidth: 300, minHeight: 300)
 					.onAppear {
 						isWorkMode = timer.mode == .work
-						// Запуск проверки обновлений при старте
 						updateChecker.checkForUpdates()
 					}
 
-				// Кнопка обновления, если доступно новое обновление
 				if updateChecker.updateAvailable {
-					Button("Update Available! Click to Update") {
-						updateChecker.downloadUpdate() // Загрузка обновления
+					Button("Update Available!") {
+						updateChecker.checkForUpdates()
 					}
 					.padding()
 					.foregroundColor(.red)

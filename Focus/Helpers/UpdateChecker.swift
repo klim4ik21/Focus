@@ -6,39 +6,110 @@
 //
 
 import Foundation
-import AppUpdater
+import ZIPFoundation
 
 class UpdateChecker: ObservableObject {
-	private let updater = AppUpdater(owner: "klim4ik21", repo: "Focus")
 	@Published var updateAvailable = false
-	private var timer: Timer?
+	@Published var latestVersion: String? = nil
+	private let repoOwner = "klim4ik21"
+	private let repoName = "Focus"
+	private var downloadTask: URLSessionDownloadTask?
 
-	init() {
-		startCheckingForUpdates() // Запуск проверки обновлений при инициализации
+	func checkForUpdates() {
+		guard let url = URL(string: "https://api.github.com/repos/\(repoOwner)/\(repoName)/releases/latest") else {
+			print("Invalid URL")
+			return
+		}
+		
+		let task = URLSession.shared.dataTask(with: url) { data, response, error in
+			if let error = error {
+				print("Error fetching updates: \(error.localizedDescription)")
+				return
+			}
+			
+			guard let data = data else {
+				print("No data received")
+				return
+			}
+			
+			do {
+				if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+				   let tagName = json["tag_name"] as? String,
+				   let assets = json["assets"] as? [[String: Any]],
+				   let asset = assets.first(where: { $0["name"] as? String == "Focus.zip" }), // Замените на имя вашего файла
+				   let downloadUrl = asset["browser_download_url"] as? String {
+					
+					DispatchQueue.main.async {
+						self.latestVersion = tagName
+						self.compareVersions(latest: tagName, downloadUrl: downloadUrl)
+					}
+				}
+			} catch {
+				print("Error parsing JSON: \(error.localizedDescription)")
+			}
+		}
+		
+		task.resume()
 	}
-
-	// Метод для старта проверки обновлений каждую минуту
-	private func startCheckingForUpdates() {
-		timer = Timer.scheduledTimer(timeInterval: 60.0, target: self, selector: #selector(checkForUpdates), userInfo: nil, repeats: true)
-	}
-
-	// Метод для проверки обновлений
-	@objc func checkForUpdates() {
-		updater.check().done { update in
-			// Здесь проверяется наличие обновлений
-			self.updateAvailable = true
-		}.catch { error in
-			print("Error checking for updates: \(error.localizedDescription)")
-			self.updateAvailable = false
+	
+	private func compareVersions(latest: String, downloadUrl: String) {
+		let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+		
+		if latest != currentVersion {
+			updateAvailable = true
+			downloadAndInstallUpdate(from: downloadUrl)
+		} else {
+			updateAvailable = false
 		}
 	}
+	
+	private func downloadAndInstallUpdate(from url: String) {
+		guard let downloadURL = URL(string: url) else {
+			print("Invalid download URL")
+			return
+		}
 
-	// Метод для загрузки обновлений
-	func downloadUpdate() {
-		// Добавьте логику для скачивания обновлений, если они доступны
+		let fileManager = FileManager.default
+
+		downloadTask = URLSession.shared.downloadTask(with: downloadURL) { tempLocalUrl, response, error in
+			if let error = error {
+				print("Error downloading update: \(error.localizedDescription)")
+				return
+			}
+
+			guard let tempLocalUrl = tempLocalUrl else {
+				print("No file downloaded")
+				return
+			}
+
+			do {
+				let appPath = URL(fileURLWithPath: Bundle.main.bundlePath)
+				let destinationPath = appPath.deletingLastPathComponent().appendingPathComponent("Focus.zip")
+
+				// Перемещаем загруженный файл
+				try fileManager.moveItem(at: tempLocalUrl, to: destinationPath)
+
+				// Распаковываем архив
+				let unzipPath = appPath.deletingLastPathComponent()
+				try fileManager.unzipItem(at: destinationPath, to: unzipPath)
+
+				// Перезапуск приложения
+				try self.restartApplication()
+			} catch {
+				print("Error installing update: \(error.localizedDescription)")
+			}
+		}
+
+		downloadTask?.resume()
 	}
 
-	deinit {
-		timer?.invalidate() // Очистка таймера при удалении объекта
+	
+	private func restartApplication() throws {
+		let appPath = Bundle.main.bundlePath
+		let task = Process()
+		task.launchPath = "/usr/bin/open"
+		task.arguments = [appPath]
+		task.launch()
+		exit(0)
 	}
 }
