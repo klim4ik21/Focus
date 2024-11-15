@@ -6,51 +6,39 @@
 //
 
 import Foundation
-import SwiftUI
+import AppUpdater
 
 class UpdateChecker: ObservableObject {
-	@Published var latestVersion: String? = nil
-	@Published var updateAvailable: Bool = false
-	private let appVersion = "1.0.0" // Текущая версия вашего приложения
-	private let githubRepo = "username/repository" // Имя вашего репозитория на GitHub
+	private let updater = AppUpdater(owner: "klim4ik21", repo: "Focus")
+	@Published var updateAvailable = false
+	private var timer: Timer?
 
-	func checkForUpdates() {
-		guard let url = URL(string: "https://api.github.com/repos/\(githubRepo)/releases/latest") else {
-			print("Invalid GitHub URL")
-			return
-		}
-
-		let task = URLSession.shared.dataTask(with: url) { data, response, error in
-			guard let data = data, error == nil else {
-				print("Error fetching data: \(String(describing: error))")
-				return
-			}
-
-			do {
-				// Парсим JSON
-				let releaseInfo = try JSONDecoder().decode(GitHubRelease.self, from: data)
-				let latestVersion = releaseInfo.tagName
-				self.latestVersion = latestVersion
-
-				// Сравниваем версии
-				if latestVersion != self.appVersion {
-					DispatchQueue.main.async {
-						self.updateAvailable = true
-					}
-				}
-			} catch {
-				print("Error decoding data: \(error)")
-			}
-		}
-		task.resume()
+	init() {
+		startCheckingForUpdates() // Запуск проверки обновлений при инициализации
 	}
 
+	// Метод для старта проверки обновлений каждую минуту
+	private func startCheckingForUpdates() {
+		timer = Timer.scheduledTimer(timeInterval: 60.0, target: self, selector: #selector(checkForUpdates), userInfo: nil, repeats: true)
+	}
+
+	// Метод для проверки обновлений
+	@objc func checkForUpdates() {
+		updater.check().done { update in
+			// Здесь проверяется наличие обновлений
+			self.updateAvailable = true
+		}.catch { error in
+			print("Error checking for updates: \(error.localizedDescription)")
+			self.updateAvailable = false
+		}
+	}
+
+	// Метод для загрузки обновлений
 	func downloadUpdate() {
-		guard let url = URL(string: "https://github.com/\(githubRepo)/releases/latest") else { return }
-		NSWorkspace.shared.open(url) // Открывает страницу релиза на GitHub
+		// Добавьте логику для скачивания обновлений, если они доступны
 	}
-}
 
-struct GitHubRelease: Codable {
-	let tagName: String
+	deinit {
+		timer?.invalidate() // Очистка таймера при удалении объекта
+	}
 }

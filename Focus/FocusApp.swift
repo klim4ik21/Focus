@@ -20,8 +20,9 @@ struct FocusApp: App {
 				TimerDemo(timer: timer)
 					.frame(minWidth: 300, minHeight: 300)
 					.onAppear {
-						isWorkMode = timer.mode == .work ? true : false
-						updateChecker.checkForUpdates() // Проверка на обновления при запуске
+						isWorkMode = timer.mode == .work
+						// Запуск проверки обновлений при старте
+						updateChecker.checkForUpdates()
 					}
 
 				// Кнопка обновления, если доступно новое обновление
